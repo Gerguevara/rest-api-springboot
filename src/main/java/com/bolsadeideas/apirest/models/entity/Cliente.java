@@ -1,8 +1,12 @@
 package com.bolsadeideas.apirest.models.entity;
 
 import javax.persistence.*;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.util.Date;
+
 
 @Entity
 @Table(name="clientes")
@@ -13,11 +17,17 @@ public class Cliente implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotEmpty
+    @Size(min = 4, max = 10)
     @Column(nullable = false)
     private String nombre;
 
+    @NotEmpty
+    @Size(min = 4, max = 10)
     private String apellido;
 
+    @NotEmpty
+    @Email
     @Column(nullable = false, unique = true)
     private String email;
 

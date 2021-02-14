@@ -6,8 +6,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,9 +26,8 @@ public class ClienteRestController {
     private IclienteService CLienteService; //declaracion del service a usar
 
     /*****************************************************************************
-     * END POINTS*
+     ******************************** END POINTS**********************************
      ******************************************************************************/
-
     @GetMapping("/clientes")
     public List<Cliente> index() {
         return CLienteService.findAll();
@@ -63,17 +66,28 @@ public class ClienteRestController {
      */
     @PostMapping("/clientes")
     @ResponseStatus(HttpStatus.CREATED) // retora un codido status especifico por defecto es OK 200
-    public ResponseEntity<?> create(@RequestBody Cliente cliente) {
+    public ResponseEntity<?> create(@Valid  @RequestBody Cliente cliente, BindingResult result) {
 
         Cliente clienteNuevo = null;
         Map<String, Object> response = new HashMap<>();
+
+        //basado en las notaciones de validacion en el entity
+        //la noacion valid en el metodo y el objeto result valida que cumpla la estructura de objeto
+        if(result.hasErrors()){
+            List<String> errors  = new ArrayList<>();
+             for(FieldError err: result.getFieldErrors()){
+                 //recorre y llena el array con los mensajes de error
+                errors.add( err.getField() + err.getDefaultMessage());
+             }
+            response.put("errors", errors);
+            return new ResponseEntity<Map<String, Object>>(response, HttpStatus.BAD_REQUEST);
+        }
 
         //error de guardado
         try {
             clienteNuevo = CLienteService.save(cliente);
         } catch (DataAccessException e) {
             response.put("mensaje", "Error al realizar el guardado en la base de datos");
-            // response.put("error messages",  e.getMessage());
             response.put("error", e.getMostSpecificCause().getMessage());
             return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -110,7 +124,6 @@ public class ClienteRestController {
             clienteActualizado = CLienteService.save(clienteActual);
         }catch (DataAccessException e) {
             response.put("mensaje", "Error al actualizar en la base de datos");
-            // response.put("error messages",  e.getMessage());
             response.put("error", e.getMostSpecificCause().getMessage());
             return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -125,9 +138,17 @@ public class ClienteRestController {
      * BORRAR
      */
     @DeleteMapping("/clientes/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable long id) {
-        CLienteService.delete(id);
+    public ResponseEntity<?>  delete(@PathVariable long id) {
+        Map<String, Object> response = new HashMap<>();
+        try{
+            CLienteService.delete(id);
+        }catch (DataAccessException e) {
+            response.put("mensaje", "Error al eliminar en la base de datos");
+            response.put("error", e.getMostSpecificCause().getMessage());
+            return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        response.put("mensaje", "Eliminado correctamente" );
+        return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
     }
 
 }
