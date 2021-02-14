@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 
 @CrossOrigin(origins = {"http://localhost:4200"}) // cors de dominio de peticiones acceptadas
@@ -74,11 +75,10 @@ public class ClienteRestController {
         //basado en las notaciones de validacion en el entity
         //la noacion valid en el metodo y el objeto result valida que cumpla la estructura de objeto
         if(result.hasErrors()){
-            List<String> errors  = new ArrayList<>();
-             for(FieldError err: result.getFieldErrors()){
-                 //recorre y llena el array con los mensajes de error
-                errors.add( err.getField() + err.getDefaultMessage());
-             }
+            List<String> errors  =  result.getFieldErrors()
+                    .stream()
+                    .map( err -> "El campo " + err.getField() + " " + err.getDefaultMessage())
+                    .collect(Collectors.toList());
             response.put("errors", errors);
             return new ResponseEntity<Map<String, Object>>(response, HttpStatus.BAD_REQUEST);
         }
@@ -102,11 +102,21 @@ public class ClienteRestController {
      */
     @PutMapping("/clientes/{id}")
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<?> update(@RequestBody Cliente cliente, @PathVariable Long id) {
+    public ResponseEntity<?> update(@Valid @RequestBody Cliente cliente,BindingResult result , @PathVariable Long id) {
         // toma el cliente
         Cliente clienteActual = CLienteService.findById(id);
         Cliente clienteActualizado = null;
         Map<String, Object> response = new HashMap<>();
+
+        //la noacion valid en el metodo y el objeto result valida que cumpla la estructura de objeto
+        if(result.hasErrors()){
+            List<String> errors  =  result.getFieldErrors()
+                    .stream()
+                    .map( err -> "El campo " + err.getField() + "" + err.getDefaultMessage())
+                    .collect(Collectors.toList());
+            response.put("errors", errors);
+            return new ResponseEntity<Map<String, Object>>(response, HttpStatus.BAD_REQUEST);
+        }
 
         // errores de parametros no validos enviados por el usuario
         if (clienteActual == null) {
