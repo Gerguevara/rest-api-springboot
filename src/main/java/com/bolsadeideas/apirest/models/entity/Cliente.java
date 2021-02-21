@@ -36,6 +36,9 @@ public class Cliente implements Serializable {
     private Date createAt;
 
 
+    private  String photo;
+
+
     /*
     * Pre Persist (mnetodos que se ejecutan antes de guardar)
     * */
@@ -88,6 +91,15 @@ public class Cliente implements Serializable {
 
     public void setCreateAt(Date createAt) {
         this.createAt = createAt;
+    }
+
+
+    public String getPhoto() {
+        return photo;
+    }
+
+    public void setPhoto(String photo) {
+        this.photo = photo;
     }
 
     // requerido por la interfaz

@@ -3,6 +3,8 @@ package com.bolsadeideas.apirest.models.service;
 import com.bolsadeideas.apirest.models.dao.IClienteDao;
 import com.bolsadeideas.apirest.models.entity.Cliente;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,6 +21,13 @@ public class ClienteServiceImpl implements  IclienteService{
         return (List<Cliente>) clienteDao.findAll();
         //devuelve un iterable por eso hace un cast
     }
+
+    // findAllwith Pagination
+    @Override
+    public Page<Cliente> findAll(Pageable pageable) {
+        return clienteDao.findAll(pageable);
+    }
+
 
     @Override
     public Cliente findById(long id) {

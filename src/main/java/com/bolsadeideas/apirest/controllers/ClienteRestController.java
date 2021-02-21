@@ -3,18 +3,29 @@ package com.bolsadeideas.apirest.controllers;
 import com.bolsadeideas.apirest.models.entity.Cliente;
 import com.bolsadeideas.apirest.models.service.IclienteService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.dao.DataAccessException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
 
 import javax.validation.Valid;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -32,6 +43,14 @@ public class ClienteRestController {
     @GetMapping("/clientes")
     public List<Cliente> index() {
         return CLienteService.findAll();
+    }
+
+
+    @GetMapping("/clientes/page/{page}")
+    public Page<Cliente> index(@PathVariable Integer page) {
+        Pageable pageable = PageRequest.of(0, 4, Sort.by("email"));
+        // Pageable pageable = PageRequest.of(0, 20, Sort.by("nombre").ascending().and(Sort.by("apellido").descending()));
+        return CLienteService.findAll(pageable);
     }
 
     /*
@@ -112,7 +131,7 @@ public class ClienteRestController {
         if(result.hasErrors()){
             List<String> errors  =  result.getFieldErrors()
                     .stream()
-                    .map( err -> "El campo " + err.getField() + "" + err.getDefaultMessage())
+                    .map( err -> err.getField() + "" + err.getDefaultMessage())
                     .collect(Collectors.toList());
             response.put("errors", errors);
             return new ResponseEntity<Map<String, Object>>(response, HttpStatus.BAD_REQUEST);
@@ -150,7 +169,18 @@ public class ClienteRestController {
     @DeleteMapping("/clientes/{id}")
     public ResponseEntity<?>  delete(@PathVariable long id) {
         Map<String, Object> response = new HashMap<>();
+        // antes de borrar al cliente tambien se borra su foto
         try{
+            Cliente cliente = CLienteService.findById(id);
+            String nombreFotoAnterior = cliente.getPhoto();
+
+            if (nombreFotoAnterior != null && nombreFotoAnterior.length() > 0){
+                Path rutaFotoAnterior = Paths.get("uploads").resolve(nombreFotoAnterior).toAbsolutePath();
+                File archivoFotoAnterior = rutaFotoAnterior.toFile();
+                if(archivoFotoAnterior.exists() && archivoFotoAnterior.canRead()){
+                    archivoFotoAnterior.delete();
+                }
+            }
             CLienteService.delete(id);
         }catch (DataAccessException e) {
             response.put("mensaje", "Error al eliminar en la base de datos");
@@ -160,5 +190,70 @@ public class ClienteRestController {
         response.put("mensaje", "Eliminado correctamente" );
         return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
     }
+
+    // guardano foto de cliente
+    @PostMapping("clientes/upload")
+    public ResponseEntity<?> uploadImg(@RequestParam("archivo") MultipartFile archivo, @RequestParam("id") long id){
+        Map<String, Object> response = new HashMap<>();
+        Cliente cliente = CLienteService.findById(id);
+
+
+        if(!archivo.isEmpty()){
+                String archivoNombre = UUID.randomUUID().toString() + archivo.getOriginalFilename().replace(" ", "");
+                Path rutaArchivo = Paths.get("uploads").resolve(archivoNombre).toAbsolutePath() ;
+            try {
+                Files.copy(archivo.getInputStream(), rutaArchivo);
+            } catch (IOException e) {
+                response.put("mensaje", "error al guardar la imagen");
+                return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+            //borrando foto anterior si existe
+            String nombreFotoAnterior = cliente.getPhoto();
+
+            if (nombreFotoAnterior != null && nombreFotoAnterior.length() > 0){
+                Path rutaFotoAnterior = Paths.get("uploads").resolve(nombreFotoAnterior).toAbsolutePath();
+                File archivoFotoAnterior = rutaFotoAnterior.toFile();
+                if(archivoFotoAnterior.exists() && archivoFotoAnterior.canRead()){
+                    archivoFotoAnterior.delete();
+                }
+            }
+
+            // seteando  foto y guardandola fisicamente
+            cliente.setPhoto(archivoNombre);
+            CLienteService.save(cliente);
+
+            response.put("cliente", cliente);
+            response.put("mensaje", "actualizado");
+        }
+
+        return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
+    }
+
+
+    // visualizar una foto
+    @GetMapping("/uploads/img/{nombreFoto:.+}")
+     public ResponseEntity<Resource> verFoto(@PathVariable String nombreFoto){
+
+        Path rutaArchivo = Paths.get("uploads").resolve(nombreFoto).toAbsolutePath() ;
+
+        Resource recurso = null;
+
+        try {
+            recurso = new UrlResource(rutaArchivo.toUri());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+            if(!recurso.exists() && !recurso.isReadable()){
+                throw new RuntimeException("Error no se pudo cargar la imagen");
+            }
+
+        HttpHeaders cabecera  = new HttpHeaders();
+            cabecera.add(HttpHeaders.CONTENT_DISPOSITION,"attachment; filename=\""+ recurso.getFilename()+"\"");
+
+        return new ResponseEntity<Resource>(recurso , cabecera,  HttpStatus.OK);
+     }
+
+
+
 
 }
