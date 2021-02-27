@@ -2,6 +2,7 @@ package com.bolsadeideas.apirest.models.service;
 
 import com.bolsadeideas.apirest.models.dao.IClienteDao;
 import com.bolsadeideas.apirest.models.entity.Cliente;
+import com.bolsadeideas.apirest.models.entity.Region;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -42,6 +43,11 @@ public class ClienteServiceImpl implements  IclienteService{
     @Override
     public void delete(long id) {
         clienteDao.deleteById(id);
+    }
+
+    @Override
+    public List<Region> findAllRegiones() {
+        return null;
     }
 }
 

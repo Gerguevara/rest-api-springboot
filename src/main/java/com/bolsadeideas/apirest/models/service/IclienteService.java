@@ -1,6 +1,7 @@
 package com.bolsadeideas.apirest.models.service;
 
 import com.bolsadeideas.apirest.models.entity.Cliente;
+import com.bolsadeideas.apirest.models.entity.Region;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -13,5 +14,6 @@ public interface IclienteService {
     public  Cliente findById(long id);
     public Cliente save(Cliente cliente);
     public void delete(long id);
+    public List<Region> findAllRegiones();
 
 }

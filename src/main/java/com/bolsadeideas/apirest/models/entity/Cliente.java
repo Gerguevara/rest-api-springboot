@@ -1,8 +1,11 @@
 package com.bolsadeideas.apirest.models.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.util.Date;
@@ -39,6 +42,12 @@ public class Cliente implements Serializable {
     private  String photo;
 
 
+   @NotNull(message = "no puede estar vacio")
+   @ManyToOne(fetch = FetchType.LAZY) // una region puede tener muchos clientes la cardinalidad empieza de regiones a clientes
+   @JoinColumn(name = "region_id") //el campo que hace la union, pero se puede omitir y automaticamente tomara el nombre de la tabla mas _id
+   @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"}) // super importante excluir estos campor
+   private Region region;
+
     /*
     * Pre Persist (mnetodos que se ejecutan antes de guardar)
     * */
@@ -46,9 +55,6 @@ public class Cliente implements Serializable {
     public void prePersist(){
         createAt = new Date(); //setea la fecha antes de guardar cualquier elemento
     }
-
-
-
     /*
     * Gettes and Setters
     * */
@@ -101,6 +107,16 @@ public class Cliente implements Serializable {
     public void setPhoto(String photo) {
         this.photo = photo;
     }
+
+    public Region getRegion() {
+        return region;
+    }
+
+    public Region setRegion(Region region) {
+        this.region = region;
+        return region;
+    }
+
 
     // requerido por la interfaz
     private static final long serialVersionUID = 1l;

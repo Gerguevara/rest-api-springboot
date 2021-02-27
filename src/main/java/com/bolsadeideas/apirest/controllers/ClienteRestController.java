@@ -1,6 +1,7 @@
 package com.bolsadeideas.apirest.controllers;
 
 import com.bolsadeideas.apirest.models.entity.Cliente;
+import com.bolsadeideas.apirest.models.entity.Region;
 import com.bolsadeideas.apirest.models.service.IclienteService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
@@ -147,6 +148,7 @@ public class ClienteRestController {
         clienteActual.setApellido(cliente.getApellido());
         clienteActual.setNombre(cliente.getNombre());
         clienteActual.setEmail(cliente.getEmail());
+        clienteActual.setRegion(cliente.setRegion(cliente.getRegion()));
 
         try {
             // guarda los cambios y retorna
@@ -253,6 +255,11 @@ public class ClienteRestController {
         return new ResponseEntity<Resource>(recurso , cabecera,  HttpStatus.OK);
      }
 
+
+     @GetMapping("/clientes/regiones")
+        public List<Region> listarRegiones(){
+        return  CLienteService.findAllRegiones();
+     }
 
 
 
