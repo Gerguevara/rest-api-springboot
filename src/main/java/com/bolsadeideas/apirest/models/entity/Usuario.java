@@ -20,6 +20,9 @@ public class Usuario implements Serializable {
     private  String password;
 
     @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinTable(name="usuarios_roles", joinColumns= @JoinColumn(name="usuario_id"),
+    inverseJoinColumns=@JoinColumn(name="role_id"),
+    uniqueConstraints= {@UniqueConstraint(columnNames= {"usuario_id", "role_id"})})
     private List<Role> roles;
 
     private boolean enabled;
@@ -75,7 +78,10 @@ public class Usuario implements Serializable {
 * en este casos usuarios_roles,  en este caso la relacion es unidireccional Usuarios - Roles
 * y no es necesaria ponerla en ambas clases.
 **
-* @JoinTable(name="users_authories" @JoinColumn(name="user_id", inverseJoinColumns=@JoinColumn(name="user_id")))
-* ejemplo ce como customisar una tabla intermedia
 * El nombre de la tabla intermedia puede customizarce en la clase dueña de la relacion, en este caso usuarios
+*   @JoinTable(name="usuarios_roles", joinColumns= @JoinColumn(name="usuario_id"),
+    inverseJoinColumns=@JoinColumn(name="role_id"),
+    uniqueConstraints= {@UniqueConstraint(columnNames= {"usuario_id", "role_id"})})
+* ejemplo ce como customisar una tabla intermedia, @UniqueConstraint indica que la relacion de pares debe ser unica, un usuario no puede repetir roles
+* Lo demas solo es la asignacion del nombre de la tabla intermedia y la indicacion de que capos hacen la union
 * */
