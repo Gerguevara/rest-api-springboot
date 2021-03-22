@@ -25,7 +25,6 @@ INSERT INTO clientes (region_id, nombre, apellido, email, create_at) VALUES(7, '
 /* Creamos algunos usuarios con sus roles */
 INSERT INTO `usuarios` (username, password, enabled) VALUES ('andres','$2a$10$C3Uln5uqnzx/GswADURJGOIdBqYrly9731fnwKDaUdBkt/M3qvtLq',1);
 INSERT INTO `usuarios` (username, password, enabled) VALUES ('admin','$2a$10$RmdEsvEfhI7Rcm9f/uZXPebZVCcPC7ZXZwV51efAvMAp1rIaRAfPK',1);
-
 INSERT INTO `roles` (nombre) VALUES ('ROLE_USER');
 INSERT INTO `roles` (nombre) VALUES ('ROLE_ADMIN');
 
