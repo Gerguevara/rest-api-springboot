@@ -11,7 +11,10 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.A
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
+import org.springframework.security.oauth2.provider.token.TokenEnhancerChain;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
+
+import java.util.Arrays;
 
 @Configuration
 @EnableAuthorizationServer
@@ -19,6 +22,9 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
 
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
+
+    @Autowired
+    private InfoAdicionalToken infoAdicionalToken;
 
     @Autowired
     @Qualifier("authenticationManager") //qualifier para elegir una  implementacion especifica de un bean por si hay otro con un mismo nombre
@@ -44,10 +50,12 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
 
     @Override
     public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
-
-        endpoints.authenticationManager(authenticationManager)
-                .accessTokenConverter(accessTokenConverter());
-
+        //concatena la informacion adicional que respondera el token (de la clase infoAdicional)
+        TokenEnhancerChain tokenEnhancerChain = new TokenEnhancerChain();
+        tokenEnhancerChain.setTokenEnhancers(Arrays.asList(infoAdicionalToken, accessTokenConverter()));
+         endpoints.authenticationManager(authenticationManager)
+                .accessTokenConverter(accessTokenConverter())
+                .tokenEnhancer(tokenEnhancerChain);
     }
 
     @Bean
