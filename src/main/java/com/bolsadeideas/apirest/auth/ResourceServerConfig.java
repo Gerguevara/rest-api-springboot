@@ -22,7 +22,8 @@ public class ResourceServerConfig extends ResourceServerConfigurerAdapter {
     // configuracion centralizada de la seguridad de las rutas
     @Override
     public void configure(HttpSecurity http) throws Exception {
-        http.authorizeRequests().antMatchers(HttpMethod.GET, "/api/clientes", "/api/clientes/page/**", "/api/uploads/img/**", "/images/**").permitAll()
+        http.authorizeRequests().antMatchers(HttpMethod.GET, "/api/clientes", "/api/clientes/page/**", "/api/uploads/img/**", "/images/**","/oauth/**").permitAll()
+                .antMatchers(HttpMethod.POST, "/oauth/**").permitAll()
                 .antMatchers(HttpMethod.GET, "/api/clientes/{id}").hasAnyRole("USER", "ADMIN")
                 .antMatchers(HttpMethod.POST, "/api/clientes/upload").hasAnyRole("USER", "ADMIN")
                 .antMatchers(HttpMethod.POST, "/api/clientes").hasRole("ADMIN")
