@@ -13,6 +13,8 @@ import org.springframework.security.oauth2.config.annotation.web.configurers.Aut
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
 import org.springframework.security.oauth2.provider.token.TokenEnhancerChain;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
+import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
+
 
 import java.util.Arrays;
 
@@ -41,9 +43,9 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
     @Override
     public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
             clients.inMemory().withClient("angularapp")
-            .secret(passwordEncoder.encode("dexoxidoribonucleico"))
+            .secret(passwordEncoder.encode("dexoxidoribonucleico")) // semilla para codificar passwords
             .scopes("read","write") //permisos
-            .authorizedGrantTypes("password", "refresh_token") //tipos de autenticacion
+            .authorizedGrantTypes("password", "refresh_token") //tipos de autenticacion soportados
             .accessTokenValiditySeconds(3600) //exp tpken
             .refreshTokenValiditySeconds(3600);
     }
@@ -59,10 +61,16 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
     }
 
     @Bean
+    public JwtTokenStore tokenStore() {
+        return new JwtTokenStore(accessTokenConverter());
+    }
+
+
+    @Bean
     public JwtAccessTokenConverter accessTokenConverter() {
      JwtAccessTokenConverter jwtAccessTokenConverter = new  JwtAccessTokenConverter();
      jwtAccessTokenConverter.setSigningKey("mypasswoerfortoken"); // setea la clave del token , si no se pasa esta es generada automaticamente
-     return jwtAccessTokenConverter;
+	return jwtAccessTokenConverter;
     }
 }
 

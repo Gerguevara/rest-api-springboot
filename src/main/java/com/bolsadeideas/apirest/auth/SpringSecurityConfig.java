@@ -11,7 +11,9 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 
+@EnableGlobalMethodSecurity(securedEnabled=true)
 @Configuration
 public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 
@@ -20,6 +22,7 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
     private UserDetailsService usuarioService;
 
     @Override
+    @Autowired
     protected void configure(AuthenticationManagerBuilder auth) throws Exception{
         auth.userDetailsService(this.usuarioService).passwordEncoder(passwordEncoder());
     }
